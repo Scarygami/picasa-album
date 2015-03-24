@@ -1,0 +1,13 @@
+{
+  "name": "polymer-cookie",
+  "version": "0.5.5",
+  "dependencies": {
+    "polymer": "Polymer/polymer#^0.5.5",
+    "webcomponentsjs": "Polymer/webcomponentsjs#^0.5.5",
+    "core-ajax": "Polymer/core-ajax#^0.5.5",
+    "core-animated-pages": "Polymer/core-animated-pages#^0.5.5",
+    "core-image": "Polymer/core-image#^0.5.5",
+    "core-toolbar": "Polymer/core-toolbar#^0.5.5",
+    "paper-icon-button": "Polymer/paper-icon-button#^0.5.5"
+  }
+}

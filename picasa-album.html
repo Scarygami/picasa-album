@@ -1,0 +1,159 @@
+<!--
+The `picasa-album` displays a Google+/Picasa photo album.
+
+For the element to render correctly it needs to have a width and height,
+which is easiest achieved by using Polymer layout attributes.
+
+##### Example
+
+     <picasa-album user="112336147904981294875" album="6094609692761352017" fit></picasa-album>
+
+@element picasa-album
+@blurb Element to display a Google+/Picasa photo album
+@status alpha
+@homepage github.io
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../core-ajax/core-ajax.html">
+<link rel="import" href="../core-animated-pages/core-animated-pages.html">
+<link rel="import" href="../core-image/core-image.html">
+<link rel="import" href="../core-toolbar/core-toolbar.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+
+<polymer-element name="picasa-album" attributes="user album">
+  <template>
+
+    <style>
+      :host {
+        position: relative;
+      };
+
+      #container {
+        overflow: hidden;
+      }
+
+      #noscroll {
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding-top: 5px;
+      }
+
+      .thumbnail {
+        display: block;
+        position: relative;
+        height: 150px;
+        width: 150px;
+        margin: 2px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      #lightbox, #photo, #actions {
+        background-color: black;
+      }
+
+      #lightbox {
+        padding-bottom: 5px;
+      }
+
+      #actions paper-icon-button {
+        color: #CCC;
+      }
+    </style>
+
+    <core-ajax
+      auto
+      url="https://picasaweb.google.com/data/feed/api/user/{{user}}/albumid/{{album}}"
+      params='{"alt":"json"}'
+      handleAs="json"
+      response="{{data}}"></core-ajax>
+
+    <core-animated-pages
+      id="photos"
+      fit
+      selected="0"
+      on-core-animated-pages-transition-end="{{transitionend}}"
+      transitions="cross-fade-all hero-transition">
+
+      <section vertical layout>
+        <div id="noscroll" fit hero-p>
+          <div id="container" flex horizontal wrap start-justified layout cross-fade>
+            <template repeat="{{item, i in data.feed.entry}}">
+              <img
+                class="thumbnail" src="{{item.content.src}}?sz=150"
+                hero-id="photo"
+                hero?="{{selected === i + 1 || lastSelected === i + 1}}"
+                on-tap="{{selectPhoto}}">
+            </template>
+          </div>
+        </div>
+      </section>
+
+      <section vertical layout>
+        <div
+          id="lightbox"
+          flex vertical layout
+          hero-id="photo" hero>
+          <core-toolbar id="actions">
+            <div flex></div>
+            <paper-icon-button icon="clear" on-tap="{{back}}" title="Close"></paper-icon-button>
+          </core-toolbar>
+          <core-image id="photo"
+            cross-fade preload fade flex
+            src="{{currentPhoto}}"
+            sizing="contain"></core-image>
+        </div>
+      </section>
+    </core-animated-pages>
+
+  </template>
+
+  <script>
+    (function(global) {
+      "use strict";
+
+      function imageUrl(url, size) {
+        var p = url.lastIndexOf('/');
+        url = url.substring(0, p + 1) + 's' + (size || 1024) + '/' + url.substring(p + 1);
+        return url;
+      }
+
+      global.Polymer({
+
+        /**
+         * Numeric Google User ID of the owner of the album
+         *
+         * @attribute user
+         * @type string
+         */
+
+        /**
+         * Numeric Album ID
+         *
+         * @attribute album
+         * @type string
+         */
+
+        selectPhoto: function (e) {
+          var item = e.target.templateInstance.model.item, i = e.target.templateInstance.model.i;
+          this.currentPhoto = imageUrl(item.content.src, this.offsetWidth);
+          this.selected = i + 1;
+          this.$.photos.selected = 1;
+        },
+
+        transitionend: function () {
+          if (this.lastSelected) {
+            this.lastSelected = null;
+          }
+        },
+
+        back: function () {
+          this.lastSelected = this.selected;
+          this.selected = 0;
+          this.$.photos.selected = 0;
+        },
+      });
+    }(this));
+  </script>
+</polymer-element>
