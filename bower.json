@@ -1,6 +1,6 @@
 {
-  "name": "polymer-cookie",
-  "version": "0.5.5",
+  "name": "picasa-album",
+  "version": "0.1.0",
   "dependencies": {
     "polymer": "Polymer/polymer#^0.5.5",
     "webcomponentsjs": "Polymer/webcomponentsjs#^0.5.5",
