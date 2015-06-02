@@ -2,11 +2,13 @@
 The `picasa-album` displays a Google+/Picasa photo album.
 
 For the element to render correctly it needs to have a width and height,
-which is easiest achieved by using Polymer layout attributes.
+which is easiest achieved by using iron-flex-layout.
 
 ##### Example
 
-     <picasa-album user="112336147904981294875" album="6094609692761352017" fit></picasa-album>
+     <picasa-album user="112336147904981294875" album="6094609692761352017" class="fit"></picasa-album>
+     
+     <picasa-album user="112336147904981294875" tag="sunset" class="fit"></picasa-album>
 
 @element picasa-album
 @blurb Element to display a Google+/Picasa photo album
