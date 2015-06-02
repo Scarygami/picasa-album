@@ -12,121 +12,116 @@ which is easiest achieved by using Polymer layout attributes.
 @blurb Element to display a Google+/Picasa photo album
 @status alpha
 @homepage https://github.com/Scarygami/picasa-album/
+@demo demo/demo-album.html
+@demo demo/demo-tag.html
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../core-ajax/core-ajax.html">
-<link rel="import" href="../core-animated-pages/core-animated-pages.html">
-<link rel="import" href="../core-image/core-image.html">
-<link rel="import" href="../core-toolbar/core-toolbar.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../neon-animation/neon-animated-pages.html">
+<link rel="import" href="../neon-animation/neon-animatable.html">
+<link rel="import" href="../neon-animation/animations/fade-in-animation.html">
+<link rel="import" href="../neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="../iron-image/iron-image.html">
+<link rel="import" href="../paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
 
-<polymer-element name="picasa-album" attributes="user album">
+<dom-module id="picasa-album">
+  <style>
+    :host {
+      position: relative;
+    };
+
+    #container {
+      overflow: hidden;
+    }
+
+    #noscroll {
+      overflow-x: hidden;
+      overflow-y: auto;
+      padding-top: 5px;
+    }
+
+    .thumbnail {
+      display: block;
+      position: relative;
+      height: 150px;
+      width: 150px;
+      margin: 2px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #lightbox, #photo, #actions {
+      background-color: black;
+    }
+
+    #lightbox {
+      padding-bottom: 5px;
+    }
+
+    #actions paper-icon-button {
+      color: #CCC;
+    }
+  </style>
   <template>
-
-    <style>
-      :host {
-        position: relative;
-      };
-
-      #container {
-        overflow: hidden;
-      }
-
-      #noscroll {
-        overflow-x: hidden;
-        overflow-y: auto;
-        padding-top: 5px;
-      }
-
-      .thumbnail {
-        display: block;
-        position: relative;
-        height: 150px;
-        width: 150px;
-        margin: 2px;
-        border-radius: 4px;
-        cursor: pointer;
-      }
-
-      #lightbox, #photo, #actions {
-        background-color: black;
-      }
-
-      #lightbox {
-        padding-bottom: 5px;
-      }
-
-      #actions paper-icon-button {
-        color: #CCC;
-      }
-    </style>
-
-    <core-ajax
+    <iron-ajax
       auto
-      url="https://picasaweb.google.com/data/feed/api/user/{{user}}/albumid/{{album}}"
-      params='{"alt":"json"}'
-      handleAs="json"
-      response="{{data}}"></core-ajax>
+      url="{{_picasaUrl(user, album, tag)}}"
+      handle-as="json"
+      last-response="{{_data}}"></iron-ajax>
 
-    <core-animated-pages
-      id="photos"
-      fit
-      selected="0"
-      on-core-animated-pages-transition-end="{{transitionend}}"
-      transitions="cross-fade-all hero-transition">
+    <neon-animated-pages id="photos" class="fit" selected="0">
 
-      <section vertical layout>
-        <div id="noscroll" fit hero-p>
-          <div id="container" flex horizontal wrap start-justified layout cross-fade>
-            <template repeat="{{item, i in data.feed.entry}}">
+      <section class="vertical layout">
+        <div id="noscroll" class="fit">
+          <div id="container" class="flex horizontal wrap start-justified layout">
+            <template is="dom-repeat" items="{{_data.feed.entry}}">
               <img
-                class="thumbnail" src="{{item.content.src}}?sz=150"
-                hero-id="photo"
-                hero?="{{selected === i + 1 || lastSelected === i + 1}}"
-                on-tap="{{selectPhoto}}">
+                class="thumbnail"
+                src="{{_thumbnail(item.content.src)}}"
+                on-tap="_selectPhoto">
             </template>
           </div>
         </div>
       </section>
 
-      <section vertical layout>
-        <div
-          id="lightbox"
-          flex vertical layout
-          hero-id="photo" hero>
-          <core-toolbar id="actions">
-            <div flex></div>
-            <paper-icon-button icon="clear" on-tap="{{back}}" title="Close"></paper-icon-button>
-          </core-toolbar>
-          <core-image id="photo"
-            cross-fade preload fade flex
-            src="{{currentPhoto}}"
-            sizing="contain"></core-image>
+      <neon-animatable class="vertical layout" entry-animation="fade-in-animation" exit-animation="fade-out-animation">
+        <div id="lightbox" class="flex vertical layout">
+          <paper-toolbar id="actions">
+            <div class="flex"></div>
+            <paper-icon-button icon="arrow-back" on-tap="_back" aria-label="Back"></paper-icon-button>
+            <paper-icon-button icon="arrow-forward" on-tap="_forward" aria-label="Forward"></paper-icon-button>
+            <paper-icon-button icon="clear" on-tap="_close" aria-label="Close"></paper-icon-button>
+          </paper-toolbar>
+          <iron-image id="photo"
+            cross-fade preload fade class="flex"
+            src="{{_currentPhoto}}"
+            sizing="contain"></iron-image>
         </div>
-      </section>
-    </core-animated-pages>
+      </neon-animatable>
+
+    </neon-animated-pages>
 
   </template>
+</dom-module>
 
-  <script>
-    (function(global) {
-      "use strict";
+<script>
+  (function(global) {
+    var Polymer = global.Polymer;
 
-      function imageUrl(url, size) {
-        var p = url.lastIndexOf('/');
-        url = url.substring(0, p + 1) + 's' + (size || 1024) + '/' + url.substring(p + 1);
-        return url;
-      }
-
-      global.Polymer({
-
+    Polymer({
+      is: "picasa-album",
+      properties: {
         /**
          * Numeric Google User ID of the owner of the album
          *
          * @attribute user
          * @type string
          */
+        user: String,
 
         /**
          * Numeric Album ID
@@ -134,26 +129,73 @@ which is easiest achieved by using Polymer layout attributes.
          * @attribute album
          * @type string
          */
-
-        selectPhoto: function (e) {
-          var item = e.target.templateInstance.model.item, i = e.target.templateInstance.model.i;
-          this.currentPhoto = imageUrl(item.content.src, this.offsetWidth);
-          this.selected = i + 1;
-          this.$.photos.selected = 1;
+        album: {
+          type: String,
+          value: ""
         },
 
-        transitionend: function () {
-          if (this.lastSelected) {
-            this.lastSelected = null;
-          }
+        /**
+         * Tag to search photos by the specified user, will be used instead of album.
+         */
+        tag: {
+          type: String,
+          value: ""
         },
 
-        back: function () {
-          this.lastSelected = this.selected;
-          this.selected = 0;
-          this.$.photos.selected = 0;
+        _selected: {
+          type: Number,
+          observer: "_showPhoto"
         },
-      });
-    }(this));
-  </script>
-</polymer-element>
+
+        _currentPhoto: String,
+        _data: Object
+      },
+
+      _selectPhoto: function (e) {
+        this._selected = e.model.index;
+        this.$.photos.selected = 1;
+      },
+
+      _close: function () {
+        this.$.photos.selected = 0;
+      },
+
+      _back: function () {
+        if (this._selected < 1) {
+          this._selected = this._data.feed.entry.length - 1;
+        } else {
+          this._selected--;
+        }
+      },
+
+      _forward: function () {
+        if (this._selected >= this._data.feed.entry.length - 1) {
+          this._selected = 0;
+        } else {
+          this._selected++;
+        }
+      },
+
+      _showPhoto: function () {
+        this._currentPhoto = imageUrl(this._data.feed.entry[this._selected].content.src, this.offsetWidth);
+      },
+
+      _picasaUrl: function (user, album, tag) {
+        if (!!tag) {
+          return "https://picasaweb.google.com/data/feed/api/user/" + user + "?kind=photo&tag=sunset&alt=json&max-results=1000";
+        }
+        return "https://picasaweb.google.com/data/feed/api/user/" + user + "/albumid/" + album + "?alt=json";
+      },
+
+      _thumbnail: function (src) {
+        return src + "?sz=150";
+      }
+    });
+
+    function imageUrl(url, size) {
+      var p = url.lastIndexOf('/');
+      url = url.substring(0, p + 1) + 's' + (size || 1024) + '/' + url.substring(p + 1);
+      return url;
+    }
+  }(this));
+</script>
