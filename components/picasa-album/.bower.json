@@ -1,0 +1,35 @@
+{
+  "name": "picasa-album",
+  "authors": [
+    "Gerwin Sturm <scarygami@gmail.com>"
+  ],
+  "description": "Display a Picasa/Google Photos album anywhere you want",
+  "keywords": "polymer, web-components, picasa, photos, album",
+  "main": "picasa-album.html",
+  "license": "Apache 2.0",
+  "homepage": "https://github.com/Scarygami/picasa-album/",
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.0.0",
+    "iron-ajax": "PolymerElements/iron-ajax#^1.0.0",
+    "neon-animation": "PolymerElements/neon-animation#^1.0.1",
+    "iron-image": "PolymerElements/iron-image#^1.0.0",
+    "paper-toolbar": "PolymerElements/paper-toolbar#^1.0.0",
+    "paper-icon-button": "PolymerElements/paper-icon-button#^1.0.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.4"
+  },
+  "_release": "d495eb229b",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "d495eb229baad08abbeb3eaff43e43164fabe377"
+  },
+  "_source": "git://github.com/Scarygami/picasa-album.git",
+  "_target": "master",
+  "_originalSource": "Scarygami/picasa-album",
+  "_direct": true
+}
